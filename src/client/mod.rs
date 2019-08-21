@@ -99,7 +99,7 @@ use self::pool::{Key as PoolKey, Pool, Poolable, Pooled, Reservation};
 pub mod conn;
 pub mod connect;
 pub(crate) mod dispatch;
-mod pool;
+pub mod pool;
 #[cfg(test)]
 mod tests;
 
@@ -395,7 +395,7 @@ where C: Connect + Sync + 'static,
         })
     }
 
-    fn connection_for(&self, uri: Uri, pool_key: PoolKey)
+    pub fn connection_for(&self, uri: Uri, pool_key: PoolKey)
         -> impl Future<Item=Pooled<PoolClient<B>>, Error=ClientError<B>>
     {
         // This actually races 2 different futures to try to get a ready
@@ -616,7 +616,7 @@ impl Future for ResponseFuture {
 
 // FIXME: allow() required due to `impl Trait` leaking types to this lint
 #[allow(missing_debug_implementations)]
-struct PoolClient<B> {
+pub struct PoolClient<B> {
     conn_info: Connected,
     tx: PoolTx<B>,
 }
@@ -661,7 +661,7 @@ impl<B> PoolClient<B> {
 }
 
 impl<B: Payload + 'static> PoolClient<B> {
-    fn send_request_retryable(&mut self, req: Request<B>) -> impl Future<Item = Response<Body>, Error = (::Error, Option<Request<B>>)>
+    pub fn send_request_retryable(&mut self, req: Request<B>) -> impl Future<Item = Response<Body>, Error = (::Error, Option<Request<B>>)>
     where
         B: Send,
     {
@@ -712,7 +712,7 @@ where
 
 // FIXME: allow() required due to `impl Trait` leaking types to this lint
 #[allow(missing_debug_implementations)]
-enum ClientError<B> {
+pub enum ClientError<B> {
     Normal(::Error),
     Canceled {
         connection_reused: bool,
